@@ -4,8 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Will You Be My Valentine?</title>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
   <style>
-    body {
+   body {
       margin: 0;
       padding: 0;
       display: flex;
@@ -160,7 +161,6 @@ body {
     margin: 20px auto;
     padding: 20px;
     box-sizing: border-box;
-    border: 5px solid #4CAF50; /* Initial green border */
     border-radius: 10px;
     position: relative;
     animation: glow 2s infinite; /* Animation around the border */
@@ -180,9 +180,73 @@ body {
       }
     }
 
+
+    @keyframes heart-float {
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      100% { transform: translateY(-100vh) scale(0.3); opacity: 0; }
+    }
+
+    .heart {
+      position: absolute;
+      font-size: 24px;
+      animation: heart-float 3s linear forwards;
+      z-index: 3;
+    }
+
+    .confetti-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    @keyframes background-pulse {
+      0% { background-size: 100% 100%; }
+      50% { background-size: 110% 110%; }
+      100% { background-size: 100% 100%; }
+    }
+
+    .celebrate-bg {
+      animation: background-pulse 2s ease infinite;
+    }
+
+    .image-expand {
+      transform: scale(1.2);
+      border: 8px solid #ff69b4 !important;
+      transition: all 1s ease;
+    }
+
+    .message-bounce {
+      animation: bounce 1s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+
+        /* Add this new message style */
+    .sassy-message {
+      color: #ffeb3b !important;
+      font-size: 1.8rem !important;
+      text-shadow: 0 0 10px rgba(255, 235, 59, 0.8) !important;
+      animation: shake 0.5s linear infinite;
+    }
+
+    @keyframes shake {
+      0% { transform: translateX(-5px); }
+      25% { transform: translateX(5px); }
+      50% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+      100% { transform: translateX(0); }
+    }
   </style>
 </head>
 <body>
+ 
   <div class="container">
     <h1>Will You Be My Valentine?</h1>
     <div class="image-container">
@@ -200,21 +264,26 @@ body {
   <div class="stars" id="stars"></div>
 
   <script>
+    // Fixed JavaScript
     const yesBtn = document.getElementById('yes-btn');
     const noBtn = document.getElementById('no-btn');
     const maybeBtn = document.getElementById('maybe-btn');
     const message = document.getElementById('message');
     const starsContainer = document.getElementById('stars');
     let noClickCount = 0;
+    let heartInterval;
 
+    // Single event listener for yes button
     yesBtn.addEventListener('click', () => {
-      message.textContent = "You've made me the happiest person alive! 💖";
+      // Basic effects
+      message.textContent = "Bathong Popinyana! 💖";
       message.style.display = 'block';
-      yesBtn.style.display = 'none';
-      noBtn.style.display = 'none';
-      maybeBtn.style.display = 'none';
+      message.classList.add('message-bounce');
+      
+      // Hide buttons
+      [yesBtn, noBtn, maybeBtn].forEach(btn => btn.style.display = 'none');
 
-      // Create falling stars
+      // Falling stars
       for (let i = 0; i < 50; i++) {
         const star = document.createElement('div');
         star.classList.add('star');
@@ -223,13 +292,109 @@ body {
         star.style.animationDelay = `${Math.random()}s`;
         starsContainer.appendChild(star);
       }
+
+      // Confetti Explosion
+      const confettiCount = 200;
+      confetti({
+        particleCount: confettiCount,
+        spread: 55,
+        origin: { y: 0.7 },
+        colors: ['#ff0000', '#ff69b4', '#ffffff']
+      });
+
+      // Floating Hearts
+      function createHeart() {
+        const heart = document.createElement('div');
+        heart.innerHTML = '💖';
+        heart.className = 'heart';
+        heart.style.left = Math.random() * 95 + 'vw';
+        heart.style.animationDuration = (Math.random() * 3 + 2) + 's';
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 3000);
+      }
+      heartInterval = setInterval(createHeart, 300);
+
+      // Background Transformation
+      document.body.style.background = 'radial-gradient(circle, #ff3b77 0%, #ff6f61 100%)';
+
+      // Image Animation
+      document.querySelector('.image-container img').classList.add('image-expand');
+
+      // Click Anywhere Celebration
+      const clickHandler = (e) => {
+        for(let i = 0; i < 5; i++) {
+          const heart = document.createElement('div');
+          heart.innerHTML = '💖';
+          heart.style.position = 'absolute';
+          heart.style.left = e.clientX + 'px';
+          heart.style.top = e.clientY + 'px';
+          heart.style.fontSize = '20px';
+          heart.style.animation = `heart-float ${Math.random() * 2 + 1}s linear`;
+          document.body.appendChild(heart);
+          setTimeout(() => heart.remove(), 2000);
+        }
+      };
+      document.addEventListener('click', clickHandler);
+
+      // Progressive Messages
+      const messages = [
+        "I love you so much! 🌟",
+        "You're my everything! 💞",
+        "Best decision ever! 🥰",
+        "Eya hle mohatsa- Ati Mike! 💘"
+      ];
+      let messageIndex = 0;
+      
+      message.addEventListener('click', () => {
+        messageIndex = (messageIndex + 1) % messages.length;
+        message.textContent = messages[messageIndex];
+        confetti({ 
+          particleCount: 50,
+          spread: 50,
+          origin: { y: 0.8 }
+        });
+      });
+
+      // Auto-rotate Messages
+      const messageInterval = setInterval(() => {
+        messageIndex = (messageIndex + 1) % messages.length;
+        message.textContent = messages[messageIndex];
+      }, 3000);
+
+      // Cleanup on page refresh
+      window.onbeforeunload = () => {
+        clearInterval(heartInterval); 
+        clearInterval(messageInterval);
+        document.removeEventListener('click', clickHandler);
+      };
     });
 
+    // Rest of your No and Maybe button code remains the same
+    // Modified No button handler
     noBtn.addEventListener('click', () => {
       noClickCount++;
-      if (noClickCount === 2) {
+      
+      // Show sassy message on 3rd click
+      if (noClickCount === 3) {
+        message.textContent = "Wena o hloka ho clapuwa straight? 😠";
+        message.style.display = 'block';
+        message.classList.add('sassy-message');
         maybeBtn.style.display = 'inline-block';
+        
+        // Add dramatic effect
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#ff0000', '#ff8000'],
+          scalar: 1.2
+        });
+        
+        // Shake the page
+        document.body.style.animation = 'shake 0.5s linear 3';
       }
+
+      // Move button logic
       const x = Math.random() * (window.innerWidth - noBtn.offsetWidth);
       const y = Math.random() * (window.innerHeight - noBtn.offsetHeight);
       noBtn.style.position = 'absolute';
@@ -237,11 +402,16 @@ body {
       noBtn.style.top = `${y}px`;
     });
 
+    // Modified Maybe button handler
     maybeBtn.addEventListener('click', () => {
-      message.textContent = 'O serious Lebohang, ska mphaphela chomie 😏';
+      message.textContent = 'Lebohang le hana joale serious? chomie i will bite you 😏';
       message.style.display = 'block';
+      message.classList.remove('sassy-message');
       yesBtn.style.display = 'inline-block';
       noBtn.style.display = 'inline-block';
+      
+      // Reset counter
+      noClickCount = 0;
     });
   </script>
 </body>
